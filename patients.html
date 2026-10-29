@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Menu — LeGreen Dzen Wellness</title>
+<meta name="description" content="Authorized patients only.">
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--bg:#0a0d0a;--panel:#111611;--panel2:#152015;--line:#243524;--leaf:#5fce3f;--leaf2:#2e8b2a;--gold:#e0b84c;--text:#eef5ea;--muted:#93a88f}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,Arial,sans-serif;line-height:1.5}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.gatebox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:38px;max-width:400px;text-align:center;width:100%}
+.gatebox input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:12px;font-size:1rem;text-align:center;letter-spacing:2px;margin:16px 0}
+button{background:var(--leaf2);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-weight:700;cursor:pointer;font-size:.95rem;width:100%}
+.err{color:var(--red,#d95757);font-size:.85rem;margin-top:10px;display:none}
+header{padding:22px 0;border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:1.2rem;color:var(--leaf)}
+.logo small{display:block;font-size:.58rem;color:var(--muted);letter-spacing:2.5px;font-weight:400}
+.menu{padding:34px 0 70px}
+h1{font-size:1.5rem;margin-bottom:4px}
+.sub{color:var(--muted);font-size:.88rem;margin-bottom:26px}
+.warn{background:#241f0e;border:1px solid var(--gold);border-radius:10px;padding:12px 16px;font-size:.8rem;color:var(--gold);margin-bottom:26px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:16px}
+.strain{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.strain h3{font-size:.98rem;margin-bottom:2px}
+.strain .type{font-size:.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--leaf);margin-bottom:8px}
+.strain .thc{font-size:.82rem;color:var(--gold);font-weight:700;margin-bottom:6px}
+.strain p{font-size:.78rem;color:var(--muted)}
+.strain .rx{margin-top:8px;font-size:.75rem;color:var(--text);border-top:1px solid var(--line);padding-top:8px}
+.strain .rx b{color:var(--leaf)}
+.orderbar{position:sticky;bottom:0;background:rgba(10,13,10,.95);border-top:1px solid var(--line);padding:14px 0;backdrop-filter:blur(8px)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gatebox">
+    <div style="font-size:2.4rem">🛡️</div>
+    <h2 style="margin:10px 0 4px">Authorized patients only</h2>
+    <p style="color:var(--muted);font-size:.85rem">Enter the access code you received via WhatsApp after your Section 21 authorization was confirmed.</p>
+    <input id="code" placeholder="ACCESS CODE" maxlength="12" autocomplete="off">
+    <button onclick="unlock()">Enter</button>
+    <p class="err" id="err">Incorrect code. Request it on WhatsApp.</p>
+    <p style="margin-top:16px;font-size:.78rem"><a id="waReq" href="#" style="color:var(--leaf)">Don't have a code? Request one on WhatsApp →</a></p>
+  </div>
+</div>
+
+<div id="menu" class="hidden">
+<header>
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center">
+    <div class="logo">LEGREEN DZEN<small>WELLNESS · PATIENT MENU</small></div>
+    <a id="waOrder" href="#" target="_blank" style="background:var(--gold);color:#111;padding:10px 20px;border-radius:8px;font-weight:800;font-size:.85rem">Order via WhatsApp</a>
+  </div>
+</header>
+
+<div class="wrap menu">
+  <h1>Current cultivars</h1>
+  <p class="sub">Availability varies. Dispensing is subject to your Section 21 authorization and Dr. Tupy's prescription.</p>
+  <div class="warn">⚠️ This page is for authorized patients only. Do not share the access code. Medicines are dispensed solely against a valid Section 21 authorization — no authorization, no dispensing.</div>
+  <div class="grid" id="strains"></div>
+</div>
+
+<div class="orderbar">
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+    <span style="font-size:.85rem;color:var(--muted)" id="sel">No cultivars selected</span>
+    <button style="width:auto;padding:11px 26px" onclick="order()">Request dispensing via WhatsApp</button>
+  </div>
+</div>
+</div>
+
+<script>
+const WHATSAPP_NUMBER = "27660491730";
+const ACCESS_CODE = "DZEN21";
+
+const strains = [
+ ["Afghani","Indica","17% THC","Strong body calm","Pain, Insomnia, G.I. issues"],
+ ["AK-47","Sativa dominant hybrid","19-25% THC","Intensely creative buzz","Pain, appetite, upset stomach"],
+ ["Blueberry","Indica","15% THC","Gently stimulating calm","Anxiety, inflammation, stress"],
+ ["Blue Dream","Sativa dominant hybrid","19-25% THC","Stimulating cerebral energy","Mood, G.I. issues, sedation"],
+ ["Bubba Kush","Indica","16-20% THC","Deeply relaxed ease","Pain, sadness, depression"],
+ ["Bubblegum","Indica","17% THC","Long-lasting body relaxation","Inflammation, muscle ease, stress"],
+ ["Candyland","Sativa dominant hybrid","20% THC","Cerebral euphoria","I.B.D., arthritis, stress"],
+ ["Cheese","Hybrid","17% THC","Stimulating functional bliss","Pain, mood, inflammation"],
+ ["Durban Poison","Sativa","17% THC","Electric energizing stimulant","I.B.S., pain, mood"],
+ ["Dutch Treat","Indica dominant hybrid","15-18% THC","Upbeat relaxing high","Pain, migraines, anxiety"],
+ ["G13","Indica dominant hybrid","20% THC","Potent cerebral sensation","Migraines, pain, inflammation"],
+ ["Girl Scout Cookies","Indica dominant hybrid","25% THC","Cerebral creative euphoria","Inflammation, muscle ease, mood"],
+ ["Gorilla Glue #4","Indica dominant hybrid","25% THC","Intense body and head effects","Crohn's disease, arthritis, O.C.D."],
+ ["Grape Ape","Indica","20% THC","Heavy relaxing stone","P.T.S.D., nausea, insomnia"],
+ ["Haze","Sativa","20% THC","Stimulating psychedelic effect","A.D.H.D., focus, appetite"],
+ ["Headband","Indica dominant hybrid","25% THC","Intensely stimulating & psychoactive","Chronic pain, inflammation, mood"],
+ ["Hindu Kush","Indica","20% THC","Couch-lock level stone","Back pain, sleep, appetite"],
+ ["Jack Herer","Sativa dominant hybrid","18-22% THC","Energetic persistent euphoria","Pain, nausea, mood"],
+ ["Kryptonite","Indica dominant hybrid","20% THC","Very psychoactive focus","Inflammation, injury pain, mood"],
+ ["L.A. Confidential","Indica dominant hybrid","22% THC","Intensely clear psychoactive","Pain, seizures, migraines"],
+ ["Northern Lights","Indica","17-20% THC","Potential humbling body high","Pain, insomnia, muscle aches"],
+ ["OG Kush","Indica dominant hybrid","20-25% THC","Heavy euphoric stone","Chronic & neuropathic pain, mood"],
+ ["Pineapple","Hybrid","14-19% THC","Giggly & stimulating","Pain, nausea, appetite"],
+ ["Skunk #1","Indica dominant hybrid","20% THC","Potent functional high","Headaches, nausea, muscle spasm"],
+ ["Sour Diesel","Sativa dominant","20-24% THC","Invigorating creative stimulant","Mood elevation, pain, fatigue"],
+ ["Tangerine","Sativa dominant hybrid","15% THC","Relaxing mood elevator","Pain, depression, muscle spasms"],
+ ["Tangie","Sativa dominant hybrid","18-20% THC","Intensely stimulating","Chronic pain, appetite, A.D.H.D."],
+ ["Trainwreck","Sativa dominant hybrid","15-19% THC","Energetic cerebral stimulus","A.D.H.D., pain, P.T.S.D."],
+ ["White Widow","Indica dominant hybrid","15-24% THC","Social cerebral high","Anxiety, neuropathy, nausea"],
+ ["Zkittlez","Indica dominant hybrid","18% THC","Heavy euphoric stimulant","Inflammation, nausea, stress"]
+];
+
+const wa = t => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(t)}`;
+document.getElementById("waReq").href = wa("Hi, I'm an authorized patient and need the access code for the patient menu.");
+document.getElementById("waOrder").href = wa("Hi, I'd like to place a patient order.");
+
+function unlock(){
+  if(document.getElementById("code").value.trim().toUpperCase() === ACCESS_CODE){
+    document.getElementById("gate").classList.add("hidden");
+    document.getElementById("menu").classList.remove("hidden");
+    render();
+  } else {
+    document.getElementById("err").style.display = "block";
+  }
+}
+document.getElementById("code").addEventListener("keydown", e=>{ if(e.key==="Enter") unlock(); });
+
+const sel = new Set();
+function render(){
+  document.getElementById("strains").innerHTML = strains.map((s,i)=>`
+    <div class="strain" onclick="tog(${i},this)" style="cursor:pointer">
+      <h3>${s[0]}</h3><div class="type">${s[1]}</div>
+      <div class="thc">${s[2]}</div><p>${s[3]}</p>
+      <div class="rx"><b>Rx:</b> ${s[4]}</div>
+    </div>`).join("");
+}
+function tog(i,el){
+  sel.has(i) ? sel.delete(i) : sel.add(i);
+  el.style.borderColor = sel.has(i) ? "var(--gold)" : "var(--line)";
+  document.getElementById("sel").textContent = sel.size
+    ? [...sel].map(i=>strains[i][0]).join(", ")
+    : "No cultivars selected";
+}
+function order(){
+  if(!sel.size){ alert("Select at least one cultivar."); return; }
+  window.open(wa(`DISPENSING REQUEST — Authorized Patient%0ACultivars: ${[...sel].map(i=>strains[i][0]).join(", ")}%0A%0APlease verify my Section 21 authorization and confirm availability, price and fulfilment.`), "_blank");
+}
+</script>
+</body>
+</html>
